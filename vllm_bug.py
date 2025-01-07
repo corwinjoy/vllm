@@ -13,8 +13,8 @@ def get_text_lines(filename):
 
 txt_lines = get_text_lines('model/t8.shakespeare.txt')
 
-mini_model = True
-fb_model = False
+mini_model = False
+fb_model = True
 
 # Original from bug
 rem = """
@@ -27,9 +27,8 @@ local_request_outputs= llm.genearate(prompts,
 if fb_model:
     llm = LLM(model = "meta-llama/Meta-Llama-3.1-405B-Instruct",
               tensor_parallel_size=2,
-              max_model_len=2*1024,
-              enable_prefix_caching=True,
-              gpu_memory_utilization=0.5)
+              max_model_len=12*1024,
+              enable_prefix_caching=True)
 
     sampling_params = SamplingParams(temperature=0.7, max_tokens=1500, n=3, best_of=3)
 
