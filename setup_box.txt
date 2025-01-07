@@ -1,0 +1,55 @@
+# AWS setup
+# Username corwin.joy
+Old
+POOLi1+IX3aUoGf4vchC9afoWXQFBEU6IGyG1XKJ
+
+new
+POOLi2+IX3aUoGf4vchC9afoWXQFBEU6IGyG1XKJ
+
+
+####################################################
+sudo apt install git-all
+
+# upload ~/.ssh/github and ~/.ssh/github.pub
+ls -al ~/.ssh
+eval "$(ssh-agent -s)"  # start ssh agent
+ssh-add ~/.ssh/github
+ssh -T git@github.com
+# Attempts to ssh to GitHub
+
+# install anaconda
+wget https://repo.anaconda.com/archive/Anaconda3-2024.10-1-Linux-x86_64.sh
+bash Anaconda3-2024.10-1-Linux-x86_64.sh
+conda activate
+
+# vllm install
+git clone git@github.com:corwinjoy/vllm.git
+cd vllm
+VLLM_USE_PRECOMPILED=1 pip install --editable .
+pip install -r requirements-dev.txt
+pytest tests/
+
+# Get instance info and setup ssh
+# https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/connection-prereqs-general.html#connection-prereqs-get-info-about-instance
+
+# Add a rule to allow ssh access
+To add a rule to allow SSH access on AWS, navigate to your EC2 security group settings, go to the "Inbound rules" tab, click "Add Rule", then set the "Type" to "SSH", "Protocol" to "TCP", "Port Range" to "22", and specify the source IP address (either "My IP" for your current connection or a custom IP range) in the "Source" field. 
+Key steps:
+Access Security Groups: Go to the AWS Management Console, navigate to EC2, then select "Security Groups". 
+Select Group: Choose the security group associated with the EC2 instance you want to allow SSH access to. 
+Edit Inbound Rules: Click on the "Inbound rules" tab and select "Edit inbound rules". 
+Add Rule: Click "Add Rule". 
+Configure Rule:
+Type: Select "SSH" 
+Protocol: TCP (automatically set when choosing SSH) 
+Port Range: 22 (automatically set when choosing SSH) 
+Source:
+"My IP" to allow access from your current IP 
+Custom IP address or range in CIDR notation 
+
+
+
+# ssh -i /path/key-pair-name.pem instance-user-name@instance-public-dns-name
+
+
+
