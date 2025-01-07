@@ -13,16 +13,23 @@ def get_text_lines(filename):
 
 txt_lines = get_text_lines('model/t8.shakespeare.txt')
 
+mini_model = True
+fb_model = False
 
-if False:
+if fb_model:
     llm = LLM(model = "meta-llama/Meta-Llama-3.1-405B-Instruct",
               tensor_parallel_size=2,
               max_model_len=12*1024,
               enable_prefix_caching=True)
 
+    sampling_params = SamplingParams(temperature=0.7, max_tokens=1500, n=3, best_of=3)
+
+
+
+
 # nroggendorff/smallama
 # facebook/opt-125m
-if True:
+if mini_model:
     llm = LLM(model="crumb/nano-mistral",
               tensor_parallel_size=1,
               enable_prefix_caching=True,
@@ -31,6 +38,7 @@ if True:
               max_num_seqs = 4,
               disable_sliding_window = True
               ) # max_num_batched_tokens=2048*2
+    sampling_params = SamplingParams(temperature=0.7, max_tokens=30, n=3, best_of=3)
 
 rem = """
 Details for Distributed Inference and Serving
@@ -56,11 +64,6 @@ Note that setting environment variables in the shell (e.g. NCCL_SOCKET_IFNAME=et
 processes in the same node, not for the processes in the other nodes. Setting environment variables when you create the 
 cluster is the recommended way. See the discussion for more information.
 """
-
-# llm = LLM(model = model_path, tensor_parallel_size=2, max_model_len=12*1024, enable_prefix_caching=True)
-# n = number of sequences
-sampling_params = SamplingParams(temperature=0.7, max_tokens=30, n=3, best_of=3)
-# sampling_params = SamplingParams(temperature=0.8, top_p=0.95)
 
 if False:
     prompts = [
