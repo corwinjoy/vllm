@@ -1,4 +1,3 @@
-from tests.test_sharded_state_loader import prompts
 from vllm import LLM, SamplingParams
 
 import random
@@ -13,8 +12,8 @@ def get_text_lines(filename):
 
 txt_lines = get_text_lines('model/t8.shakespeare.txt')
 
-mini_model = False
-fb_model = True
+mini_model = True
+fb_model = False
 
 # Original from bug
 rem = """
@@ -28,7 +27,8 @@ if fb_model:
     llm = LLM(model = "meta-llama/Meta-Llama-3.1-405B-Instruct",
               tensor_parallel_size=2,
               max_model_len=12*1024,
-              enable_prefix_caching=True)
+              enable_prefix_caching=True,
+              gpu_memory_utilization=0.80)
 
     sampling_params = SamplingParams(temperature=0.7, max_tokens=1500, n=3, best_of=3)
 
@@ -39,12 +39,12 @@ if fb_model:
 # facebook/opt-125m
 if mini_model:
     llm = LLM(model="crumb/nano-mistral",
-              tensor_parallel_size=1,
+              tensor_parallel_size=2,
               enable_prefix_caching=True,
               distributed_executor_backend = "ray", # "ray" is default, "mp" is python multiprocessing for single node
-              scheduling_policy = "priority",
-              max_num_seqs = 4,
-              disable_sliding_window = True
+              scheduling_policy = "priority"
+              # ,max_num_seqs = 4
+              , disable_sliding_window = True
               ) # max_num_batched_tokens=2048*2
     sampling_params = SamplingParams(temperature=0.7, max_tokens=30, n=3, best_of=3)
 
@@ -82,16 +82,20 @@ if False:
     ]
 
 random.seed(42)
-for j in range(0, 2):
+for j in range(0, 2000):
     print("------------------------------------------------------------------------\n")
     print(f"Prompt batch: {j}")
     prompts = []
-    for i in range(0, 20):
-        prompts.append(random_line(txt_lines))
+    for i in range(50):
+        lines = []
+        for _ in range(10):
+            lines.append(random_line(txt_lines))
+        prompt = "\n".join(lines)
+        prompts.append(prompt)
 
     outputs = llm.generate(prompts, sampling_params, priority = range(len(prompts)))
 
     for output in outputs:
         prompt = output.prompt
         generated_text = output.outputs[0].text
-        print(f"Prompt: {prompt!r}, Generated text: {generated_text!r}")
+        # print(f"Prompt: {prompt!r}\nGenerated text: {generated_text!r}")
