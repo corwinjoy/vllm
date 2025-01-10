@@ -12,8 +12,8 @@ def get_text_lines(filename):
 
 txt_lines = get_text_lines('model/t8.shakespeare.txt')
 
-mini_model = True
-fb_model = False
+mini_model = False
+fb_model = True
 
 # Original from bug
 rem = """
@@ -24,11 +24,11 @@ local_request_outputs= llm.genearate(prompts,
 """
 
 if fb_model:
-    llm = LLM(model = "meta-llama/Meta-Llama-3.1-405B-Instruct",
+    llm = LLM(model = "meta-llama/Meta-Llama-3.1-8B-Instruct",
               tensor_parallel_size=2,
               max_model_len=12*1024,
               enable_prefix_caching=True,
-              gpu_memory_utilization=0.80)
+              gpu_memory_utilization=0.90)
 
     sampling_params = SamplingParams(temperature=0.7, max_tokens=1500, n=3, best_of=3)
 
@@ -39,7 +39,7 @@ if fb_model:
 # facebook/opt-125m
 if mini_model:
     llm = LLM(model="crumb/nano-mistral",
-              tensor_parallel_size=2,
+              tensor_parallel_size=1,
               enable_prefix_caching=True,
               distributed_executor_backend = "ray", # "ray" is default, "mp" is python multiprocessing for single node
               scheduling_policy = "priority"
@@ -88,14 +88,16 @@ for j in range(0, 2000):
     prompts = []
     for i in range(50):
         lines = []
-        for _ in range(10):
+        for _ in range(200):
             lines.append(random_line(txt_lines))
         prompt = "\n".join(lines)
         prompts.append(prompt)
 
-    outputs = llm.generate(prompts, sampling_params, priority = range(len(prompts)))
+    outputs = llm.generate(prompts, sampling_params)
 
     for output in outputs:
         prompt = output.prompt
         generated_text = output.outputs[0].text
         # print(f"Prompt: {prompt!r}\nGenerated text: {generated_text!r}")
+
+
