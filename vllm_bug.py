@@ -26,6 +26,7 @@ local_request_outputs= llm.genearate(prompts,
 if fb_model:
     llm = LLM(model = "meta-llama/Meta-Llama-3.1-8B-Instruct",
               tensor_parallel_size=2,
+              preemption_mode="swap",
               max_model_len=12*1024,
               enable_prefix_caching=True,
               gpu_memory_utilization=0.90)
@@ -82,13 +83,13 @@ if False:
     ]
 
 random.seed(42)
-for j in range(0, 2000):
+for j in range(0, 200):
     print("------------------------------------------------------------------------\n")
     print(f"Prompt batch: {j}")
     prompts = []
     for i in range(50):
         lines = []
-        for _ in range(200):
+        for _ in range(1000):
             lines.append(random_line(txt_lines))
         prompt = "\n".join(lines)
         prompts.append(prompt)
